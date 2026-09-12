@@ -1,0 +1,82 @@
+image: docker:stable
+
+stages:
+- pre-build
+- build
+- notificacao
+
+
+build-docker:
+  services:
+  - docker:dind 
+  retry: 2 
+  before_script:
+  - docker info
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+
+  stage: pre-build
+  script:
+  - docker build -t minha-imagem .
+  - docker tag minha-imagem nome_do_docker_hub/minha-imagem:latest
+  - docker push nome_do_docker_hub/minha-imagem:latest
+
+
+build-project:
+  image: nome_do_docker_hub/minha-imagem:latest
+  retry: 2 
+  services:
+  - docker:dind
+  stage: build
+  tags:
+  - docker
+  dependencies:
+  - build-docker
+  script:
+  - python3 plot_simples_grafico.py
+
+notificacao-sucesso:
+  image: nome_do_docker_hub/minha-imagem:latest   
+  stage: notificacao
+  tags:
+  - docker
+  when: on_success
+  script:
+  - python3 relogio.py 
+  - sh notificacaoSucesso.sh 
+
+notificacao-falhas:
+  image: nome_do_docker_hub/minha-imagem:latest
+  stage: notificacao
+  tags:
+  - docker
+  when: on_failure
+  script:
+  - python3 relogio.py
+  - echo sh notificacaoFalha.sh
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
