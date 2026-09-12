@@ -1,30 +1,43 @@
-name: Pipeline UNOPAR CI CD
+name: Pipeline UNOPAR CI CD com Docker
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build:
+  build-docker:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout do codigo
       uses: actions/checkout@v4
 
-    - name: Configurar o Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.x"
-
-    - name: Simular execucao do script de sucesso
+    - name: Executar Scripts Iniciais
       run: |
-        echo "Executando scripts da atividade..."
         python relogio.py
-        bash notificacaoSucesso.sh
-  
+
+    - name: Fazer Login no Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: 'herlan513'
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Construir Imagem Docker (Build)
+      run: |
+        docker build -t minha-imagem .
+
+    - name: Taguear e Enviar para o Docker Hub (Push)
+      run: |
+        docker tag minha-imagem herlan513/minha-imagem:latest
+        docker push herlan513/minha-imagem:latest
+
+    - name: Enviar Notificacao de Sucesso
+      if: success()
+      run: bash notificacaoSucesso.sh
+
+    - name: Enviar Notificacao de Falha
+      if: failure()
+      run: bash notificacaoFalha.sh
 
 
 
