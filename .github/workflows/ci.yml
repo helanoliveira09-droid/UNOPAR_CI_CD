@@ -1,0 +1,52 @@
+name: Pipeline UNOPAR CI CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do codigo
+      uses: actions/checkout@v4
+
+    - name: Configurar o Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Simular execucao do script de sucesso
+      run: |
+        echo "Executando scripts da atividade..."
+        python relogio.py
+        bash notificacaoSucesso.sh
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
